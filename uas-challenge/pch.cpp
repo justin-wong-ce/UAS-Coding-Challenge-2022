@@ -6,7 +6,79 @@
 #include <math.h>
 
 /*
-* find_intersect()
+* find_intersect_cylinder()
+* Requires:
+* - coordinate: point0, coordinate of the starting point of the line
+* - coordinate: point1, coordinate of the ending point of the line
+* - circle: circle0, the cyliner to check for intersects: pre-condition: z-coordinate = 0
+* Returns:
+* - int: number of intersects
+*/
+std::vector<Coordinate_double> find_intersect_cylinder(Coordinate point0, Coordinate point1, Circle circle0) {
+	/**
+	* Algorithm
+	* 1. See if line intersects circle in 2D:
+	*	Substitute equation of 2D line into equation of circle, then check for real discriminants
+	*		discriminant > 0: 2 intersects
+	*		discriminant = 0: 1 intersect
+	*		discriminant < 0: No intersects
+	* 2. If intersect exists, solve full quadratic equation for x, then find y with x
+	* 3. Find scalar for the intersect, then use this scalar to find intersecting z-coordinate
+	*/
+	std::vector<Coordinate_double> intersects = std::vector<Coordinate_double>();
+
+	// Find constants of quadratic equation
+	// Equation is already expanded. Check [INSERT DOCUMENTATION LINK HERE] for how this came to be.
+	double slope = (point1.y_coor - point0.y_coor) / (double) (point1.x_coor - point0.x_coor);
+	double const_a = 1 + pow(slope, 2);
+	double const_b = 2 * slope * (point0.y_coor - slope * point0.x_coor) - 2 * circle0.get_coordinate().x_coor - 2 * circle0.get_coordinate().y_coor * slope;
+	double const_c = pow(circle0.get_coordinate().x_coor, 2) + pow((point0.y_coor - slope * point0.x_coor), 2) - 2 * circle0.get_coordinate().y_coor * (point0.y_coor - slope * point0.x_coor) + pow(circle0.get_coordinate().y_coor, 2) - pow(circle0.get_radius(), 2);
+
+	// Find discriminants
+	float discriminant = pow(const_b, 2) - (4 * const_a * const_c);		// Float to adjust for computer inaccuracies
+	if (discriminant < 0) {
+		return intersects;
+	}
+	else if (discriminant == 0) {
+		double x_intersect = (0 - const_b) / (2 * const_a);
+		double y_intersect = point0.y_coor + slope * (x_intersect - point0.x_coor);
+
+		// Find intersect z-coordinate
+		// Check if there is any diff between the 2 y-points first
+		double z_intersect;
+		if (point1.y_coor - point0.y_coor == 0) {
+			z_intersect = point0.z_coor + (point1.z_coor - point0.z_coor) * (x_intersect - point0.x_coor) / (point1.x_coor - point0.x_coor);
+		}
+		else {
+			z_intersect = point0.z_coor + (point1.z_coor - point0.z_coor) * (y_intersect - point0.y_coor) / (point1.y_coor - point0.y_coor);
+		}
+		intersects.push_back(Coordinate_double(x_intersect, y_intersect, z_intersect));
+		return intersects;
+	}
+	else {
+		double x_intersect0 = ((0 - const_b) + sqrt(discriminant)) / (2 * const_a);
+		double y_intersect0 = point0.y_coor + slope * (x_intersect0 - point0.x_coor);
+		double x_intersect1 = ((0 - const_b) - sqrt(discriminant)) / (2 * const_a);
+		double y_intersect1 = point0.y_coor + slope * (x_intersect1 - point0.x_coor);
+
+		// Find intersect z-coordinates
+		double z_intersect0, z_intersect1;
+		if (point1.y_coor - point0.y_coor == 0) {
+			z_intersect0 = point0.z_coor + (point1.z_coor - point0.z_coor) * (x_intersect0 - point0.x_coor) / (point1.x_coor - point0.x_coor);
+			z_intersect1 = point0.z_coor + (point1.z_coor - point0.z_coor) * (x_intersect1 - point0.x_coor) / (point1.x_coor - point0.x_coor);
+		}
+		else {
+			z_intersect0 = point0.z_coor + (point1.z_coor - point0.z_coor) * (y_intersect0 - point0.y_coor) / (point1.y_coor - point0.y_coor);
+			z_intersect1 = point0.z_coor + (point1.z_coor - point0.z_coor) * (y_intersect1 - point0.y_coor) / (point1.y_coor - point0.y_coor);
+		}
+		intersects.push_back(Coordinate_double(x_intersect0, y_intersect0, z_intersect0));
+		intersects.push_back(Coordinate_double(x_intersect1, y_intersect1, z_intersect1));
+		return intersects;
+	}
+}
+
+/*
+* find_intersect_sphere()
 * Requires:
 * - coordinate: point0, coordinate of the starting point of the line
 * - coordinate: point1, coordinate of the ending point of the line
@@ -14,7 +86,7 @@
 * Returns:
 * - int: number of intersects
 */
-int find_intersect(Coordinate point0, Coordinate point1, Circle circle0) {
+int find_intersect_sphere(Coordinate point0, Coordinate point1, Circle circle0) {
 	/**
 	* Algorithm
 	* 1. Find equation of plane perpendicular to line

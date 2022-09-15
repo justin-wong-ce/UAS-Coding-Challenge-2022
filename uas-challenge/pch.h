@@ -5,6 +5,7 @@
 #pragma once
 
 #include "gtest/gtest.h"
+#include <vector>
 
 class Coordinate {
 public:
@@ -12,6 +13,16 @@ public:
 	int y_coor;
 	int z_coor;
 	Coordinate(int x, int y, int z)
+		: x_coor(x), y_coor(y), z_coor(z)
+	{}
+};
+
+class Coordinate_double {
+public:
+	double x_coor;
+	double y_coor;
+	double z_coor;
+	Coordinate_double(double x, double y, double z)
 		: x_coor(x), y_coor(y), z_coor(z)
 	{}
 };
@@ -34,15 +45,26 @@ public:
 };
 
 /*
-* find_intersect()
+* find_intersect_cylinder()
 * Requires:
 * - coordinate: point0, coordinate of the starting point of the line
 * - coordinate: point1, coordinate of the ending point of the line
-* - circle: circle0, the circle to check for intersects
+* - circle: circle0, the sphere to check for intersects
 * Returns:
 * - int: number of intersects
 */
-int find_intersect(Coordinate point0, Coordinate point1, Circle circle0);
+std::vector<Coordinate_double> find_intersect_cylinder(Coordinate point0, Coordinate point1, Circle circle0);
+
+/*
+* find_intersect_sphere()
+* Requires:
+* - coordinate: point0, coordinate of the starting point of the line
+* - coordinate: point1, coordinate of the ending point of the line
+* - circle: circle0, the sphere to check for intersects
+* Returns:
+* - int: number of intersects
+*/
+int find_intersect_sphere(Coordinate point0, Coordinate point1, Circle circle0);
 
 /*
 * find_dist_squared()
