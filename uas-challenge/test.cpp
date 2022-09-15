@@ -218,7 +218,7 @@ TEST(In_Plane, Intersections_Sphere) {
 	ASSERT_EQ(result, 0);
 }
 
-TEST(Profiling_20000_Calls_Cylinder, Intersections_Cylinder) {
+TEST(Profiling_10000_Calls_Cylinder, Intersections_Cylinder) {
 	Coordinate* coors[30000];
 	int rads[10000];
 	int GRID_MAX = 1000;
