@@ -14,12 +14,12 @@ TEST(Given_2D_Cases, Intersections) {
 	ASSERT_EQ(result0, 2);
 	ASSERT_EQ(result1.size(), 2);
 
-	ASSERT_EQ(round(result1[0].x_coor * 100) / 100, round(10.64 * 100) / 100);
-	ASSERT_EQ(round(result1[0].y_coor * 100) / 100, round(7.73 * 100) / 100);
+	ASSERT_EQ(round(result1[0].x_coor * 100) / 100, round(5.6 * 100) / 100);
+	ASSERT_EQ(round(result1[0].y_coor * 100) / 100, round(-0.67 * 100) / 100);
 	ASSERT_EQ(round(result1[0].z_coor * 100) / 100, round(0 * 100) / 100);
 
-	ASSERT_EQ(round(result1[1].x_coor * 100) / 100, round(5.6 * 100) / 100);
-	ASSERT_EQ(round(result1[1].y_coor * 100) / 100, round(-0.67 * 100) / 100);
+	ASSERT_EQ(round(result1[1].x_coor * 100) / 100, round(10.64 * 100) / 100);
+	ASSERT_EQ(round(result1[1].y_coor * 100) / 100, round(7.73 * 100) / 100);
 	ASSERT_EQ(round(result1[1].z_coor * 100) / 100, round(0 * 100) / 100);
 
 	// 1 Intersect
@@ -45,6 +45,38 @@ TEST(Given_2D_Cases, Intersections) {
 	ASSERT_EQ(result1.size(), 0);
 }
 
+TEST(Alternate_Path, Alternate_Path) {
+	Coordinate p0 = Coordinate(0, -10, 0);
+	Coordinate p1 = Coordinate(15, 15, 15);
+	Circle c0 = Circle(Coordinate(9, 3, 0), 5);
+	std::vector<Coordinate_double> result = find_intersect_cylinder(p0, p1, c0);
+	result = find_alt_route_cynlinder(p0, p1, c0, result);
+
+	for (int i = 0; i < result.size() - 1; i++) {
+		ASSERT_EQ(find_intersect_cylinder(result[i], result[i + 1], c0).size(), 0);
+	}
+
+	p0 = Coordinate(0, -10, 0);
+	p1 = Coordinate(3, 20, 8);
+	c0 = Circle(Coordinate(2, 8, 0), 7);
+	result = find_intersect_cylinder(p0, p1, c0);
+	result = find_alt_route_cynlinder(p0, p1, c0, result);
+	
+	for (int i = 0; i < result.size() - 1; i++) {
+		ASSERT_EQ(find_intersect_cylinder(result[i], result[i + 1], c0).size(), 0);
+	}
+
+	p0 = Coordinate(0, 10, 0);
+	p1 = Coordinate(30, 10, -8);
+	c0 = Circle(Coordinate(12, 0, 0), 10);
+	result = find_intersect_cylinder(p0, p1, c0);
+	result = find_alt_route_cynlinder(p0, p1, c0, result);
+
+	for (int i = 0; i < result.size() - 1; i++) {
+		ASSERT_EQ(find_intersect_cylinder(result[i], result[i + 1], c0).size(), 0);
+	}
+}
+
 TEST(Two_Intersections, Intersections_Cylinder) {
 	Coordinate p0 = Coordinate(0, -10, 0);
 	Coordinate p1 = Coordinate(15, 15, 15);
@@ -52,13 +84,13 @@ TEST(Two_Intersections, Intersections_Cylinder) {
 	std::vector<Coordinate_double> result = find_intersect_cylinder(p0, p1, c0);
 	ASSERT_EQ(result.size(), 2);
 
-	ASSERT_EQ(round(result[0].x_coor * 100) / 100, round(10.64 * 100) / 100);
-	ASSERT_EQ(round(result[0].y_coor * 100) / 100, round(7.73 * 100) / 100);
-	ASSERT_EQ(round(result[0].z_coor * 100) / 100, round(10.64 * 100) / 100);
+	ASSERT_EQ(round(result[0].x_coor * 100) / 100, round(5.6 * 100) / 100);
+	ASSERT_EQ(round(result[0].y_coor * 100) / 100, round(-0.67 * 100) / 100);
+	ASSERT_EQ(round(result[0].z_coor * 100) / 100, round(5.6 * 100) / 100);
 
-	ASSERT_EQ(round(result[1].x_coor * 100) / 100, round(5.6 * 100) / 100);
-	ASSERT_EQ(round(result[1].y_coor * 100) / 100, round(-0.67 * 100) / 100);
-	ASSERT_EQ(round(result[1].z_coor * 100) / 100, round(5.6 * 100) / 100);
+	ASSERT_EQ(round(result[1].x_coor * 100) / 100, round(10.64 * 100) / 100);
+	ASSERT_EQ(round(result[1].y_coor * 100) / 100, round(7.73 * 100) / 100);
+	ASSERT_EQ(round(result[1].z_coor * 100) / 100, round(10.64 * 100) / 100);
 
 	p0 = Coordinate(0, -10, 0);
 	p1 = Coordinate(3, 20, 8);
@@ -66,13 +98,13 @@ TEST(Two_Intersections, Intersections_Cylinder) {
 	result = find_intersect_cylinder(p0, p1, c0);
 	ASSERT_EQ(result.size(), 2);
 
-	ASSERT_EQ(round(result[0].x_coor * 100) / 100, round(2.5 * 100) / 100);
-	ASSERT_EQ(round(result[0].y_coor * 100) / 100, round(14.98 * 100) / 100);
-	ASSERT_EQ(round(result[0].z_coor * 100) / 100, round(6.66 * 100) / 100);
+	ASSERT_EQ(round(result[0].x_coor * 100) / 100, round(1.11 * 100) / 100);
+	ASSERT_EQ(round(result[0].y_coor * 100) / 100, round(1.06 * 100) / 100);
+	ASSERT_EQ(round(result[0].z_coor * 100) / 100, round(2.95 * 100) / 100);
 
-	ASSERT_EQ(round(result[1].x_coor * 100) / 100, round(1.11 * 100) / 100);
-	ASSERT_EQ(round(result[1].y_coor * 100) / 100, round(1.06 * 100) / 100);
-	ASSERT_EQ(round(result[1].z_coor * 100) / 100, round(2.95 * 100) / 100);
+	ASSERT_EQ(round(result[1].x_coor * 100) / 100, round(2.5 * 100) / 100);
+	ASSERT_EQ(round(result[1].y_coor * 100) / 100, round(14.98 * 100) / 100);
+	ASSERT_EQ(round(result[1].z_coor * 100) / 100, round(6.66 * 100) / 100);
 }
 
 TEST(One_Intersection, Intersections_Cylinder) {
@@ -103,6 +135,12 @@ TEST(No_Intersection, Intersections_Cylinder) {
 	p0 = Coordinate(12, 15, -16);
 	p1 = Coordinate(-9, -8, 2);
 	c0 = Circle(Coordinate(10, 0, 0), 7);
+	result = find_intersect_cylinder(p0, p1, c0);
+	ASSERT_EQ(result.size(), 0);
+
+	p0 = Coordinate(0, -10, 0);
+	p1 = Coordinate(4, -2, 5);
+	c0 = Circle(Coordinate(9, 3, 0), 5);
 	result = find_intersect_cylinder(p0, p1, c0);
 	ASSERT_EQ(result.size(), 0);
 }
@@ -216,6 +254,50 @@ TEST(In_Plane, Intersections_Sphere) {
 	result = find_intersect_sphere(p0, p1, c0);
 
 	ASSERT_EQ(result, 0);
+}
+
+TEST(Finding_Distance, Distances_And_Traversals) {
+	Coordinate_double p0 = Coordinate_double(0, 0, 0);
+	Coordinate_double p1 = Coordinate_double(0, 0, 0);
+
+	ASSERT_EQ(find_dist_squared(p0, p1), 0);
+
+	p0 = Coordinate_double(3, 4, 5);
+	p1 = Coordinate_double(3, 4, 5);
+
+	ASSERT_EQ(find_dist_squared(p0, p1), 0);
+
+	p0 = Coordinate_double(-3, -4, -5);
+	p1 = Coordinate_double(0, 0, 0);
+
+	ASSERT_EQ(find_dist_squared(p0, p1), 50);
+
+	p0 = Coordinate_double(3, 4, 5);
+	p1 = Coordinate_double(-3, -4, -5);
+
+	ASSERT_EQ(find_dist_squared(p0, p1), 200);
+}
+
+TEST(Line_Traversal, Distances_And_Traversals) {
+	Coordinate_double p0 = Coordinate_double(0, 0, 0);
+	Coordinate_double p1 = Coordinate_double(0, 0, 0);
+
+	ASSERT_EQ(find_dist_squared(p0, p1), 0);
+
+	p0 = Coordinate_double(3, 4, 5);
+	p1 = Coordinate_double(3, 4, 5);
+
+	ASSERT_EQ(find_dist_squared(p0, p1), 0);
+
+	p0 = Coordinate_double(-3, -4, -5);
+	p1 = Coordinate_double(0, 0, 0);
+
+	ASSERT_EQ(find_dist_squared(p0, p1), 50);
+
+	p0 = Coordinate_double(3, 4, 5);
+	p1 = Coordinate_double(-3, -4, -5);
+
+	ASSERT_EQ(find_dist_squared(p0, p1), 200);
 }
 
 TEST(Profiling_10000_Calls_Cylinder, Intersections_Cylinder) {

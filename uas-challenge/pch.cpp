@@ -8,14 +8,14 @@
 /*
 * find_intersect_cylinder()
 * Requires:
-* - coordinate: point0, coordinate of the starting point of the line
-* - coordinate: point1, coordinate of the ending point of the line
-* - circle: circle0, the cyliner to check for intersects: pre-condition: z-coordinate = 0
+* - Coordinate: point0, coordinate of the starting point of the line
+* - Coordinate: point1, coordinate of the ending point of the line
+* - Circle: circle0, the sphere to check for intersects
 * Returns:
-* - int: number of intersects
+* - std::vector<Coordinate_double>: Ordered intersecting points, empty if none. One closer to the starting point will be first
 */
-std::vector<Coordinate_double> find_intersect_cylinder(Coordinate point0, Coordinate point1, Circle circle0) {
-	/**
+std::vector<Coordinate_double> find_intersect_cylinder(Coordinate_double point0, Coordinate_double point1, Circle circle0) {
+	/*
 	* Algorithm
 	* 1. See if line intersects circle in 2D:
 	*	Substitute equation of 2D line into equation of circle, then check for real discriminants
@@ -33,6 +33,7 @@ std::vector<Coordinate_double> find_intersect_cylinder(Coordinate point0, Coordi
 	double const_a = 1 + pow(slope, 2);
 	double const_b = 2 * slope * (point0.y_coor - slope * point0.x_coor) - 2 * circle0.get_coordinate().x_coor - 2 * circle0.get_coordinate().y_coor * slope;
 	double const_c = pow(circle0.get_coordinate().x_coor, 2) + pow((point0.y_coor - slope * point0.x_coor), 2) - 2 * circle0.get_coordinate().y_coor * (point0.y_coor - slope * point0.x_coor) + pow(circle0.get_coordinate().y_coor, 2) - pow(circle0.get_radius(), 2);
+	double points_dist = find_dist_squared(point0, point1);
 
 	// Find discriminants
 	float discriminant = pow(const_b, 2) - (4 * const_a * const_c);		// Float to adjust for computer inaccuracies
@@ -43,7 +44,7 @@ std::vector<Coordinate_double> find_intersect_cylinder(Coordinate point0, Coordi
 		double x_intersect = (0 - const_b) / (2 * const_a);
 		double y_intersect = point0.y_coor + slope * (x_intersect - point0.x_coor);
 
-		// Find intersect z-coordinate
+		// Find intersecting z-coordinate
 		// Check if there is any diff between the 2 y-points first
 		double z_intersect;
 		if (point1.y_coor - point0.y_coor == 0) {
@@ -52,7 +53,12 @@ std::vector<Coordinate_double> find_intersect_cylinder(Coordinate point0, Coordi
 		else {
 			z_intersect = point0.z_coor + (point1.z_coor - point0.z_coor) * (y_intersect - point0.y_coor) / (point1.y_coor - point0.y_coor);
 		}
-		intersects.push_back(Coordinate_double(x_intersect, y_intersect, z_intersect));
+		Coordinate_double intersect = Coordinate_double(x_intersect, y_intersect, z_intersect);
+
+		// Check if intersect is within line
+		if (find_dist_squared(intersect, point0) < points_dist && find_dist_squared(intersect, point1) < points_dist) {
+			intersects.push_back(Coordinate_double(x_intersect, y_intersect, z_intersect));
+		}
 		return intersects;
 	}
 	else {
@@ -61,7 +67,7 @@ std::vector<Coordinate_double> find_intersect_cylinder(Coordinate point0, Coordi
 		double x_intersect1 = ((0 - const_b) - sqrt(discriminant)) / (2 * const_a);
 		double y_intersect1 = point0.y_coor + slope * (x_intersect1 - point0.x_coor);
 
-		// Find intersect z-coordinates
+		// Find intersecting z-coordinates
 		double z_intersect0, z_intersect1;
 		if (point1.y_coor - point0.y_coor == 0) {
 			z_intersect0 = point0.z_coor + (point1.z_coor - point0.z_coor) * (x_intersect0 - point0.x_coor) / (point1.x_coor - point0.x_coor);
@@ -71,23 +77,90 @@ std::vector<Coordinate_double> find_intersect_cylinder(Coordinate point0, Coordi
 			z_intersect0 = point0.z_coor + (point1.z_coor - point0.z_coor) * (y_intersect0 - point0.y_coor) / (point1.y_coor - point0.y_coor);
 			z_intersect1 = point0.z_coor + (point1.z_coor - point0.z_coor) * (y_intersect1 - point0.y_coor) / (point1.y_coor - point0.y_coor);
 		}
-		intersects.push_back(Coordinate_double(x_intersect0, y_intersect0, z_intersect0));
-		intersects.push_back(Coordinate_double(x_intersect1, y_intersect1, z_intersect1));
+		Coordinate_double intersect0 = Coordinate_double(x_intersect0, y_intersect0, z_intersect0);
+		Coordinate_double intersect1 = Coordinate_double(x_intersect1, y_intersect1, z_intersect1);
+
+		// Find intersect closer to start point
+		bool intersect0_closer = find_dist_squared(intersect0, point0) < find_dist_squared(intersect1, point0);
+		// Check if intersect is within line
+		if (find_dist_squared(intersect0, point0) < points_dist && find_dist_squared(intersect0, point1) < points_dist) {
+			intersects.push_back(intersect0);
+		}
+		if (find_dist_squared(intersect1, point0) < points_dist && find_dist_squared(intersect1, point1) < points_dist) {
+			if (intersect0_closer) {
+				intersects.push_back(intersect1);
+			}
+			else {
+				intersects.insert(intersects.begin(), intersect1);
+			}
+		}
 		return intersects;
 	}
 }
 
 /*
+* find_alt_route_cynlinder()
+* Requires:
+* - Coordinate: point0, coordinate of the starting point of the line
+* - Coordinate: point1, coordinate of the ending point of the line
+* - Circle: circle0, the sphere to check for intersects
+* - std::vector<Coordinate_double>: intersects, list of sorted intersects with the intersect closer to the start point in front
+* Returns:
+* - std::vector<Coordinate_double>: intersecting points, empty if none
+*/
+std::vector<Coordinate_double> find_alt_route_cynlinder(Coordinate_double point0, Coordinate_double point1, Circle circle0, std::vector<Coordinate_double> intersects){
+	/*
+	 * Algorithm:
+	 * 	1. Move 1 unit away from direction of center of circle from intersect closer to start point
+	 * 	2. Find intersect from above point to end and repeat 1) for new intersect
+	 * 	3. If new intersect same as old intersect, shift new intersect 1 unit perpendicular to the vector<circle_midpoint - intersect>
+	 * 	4. Save starting point and moved-away intersects to result array
+	 * 	5. Repeat 1, 2, 4 wtihout saving starting point
+	 */
+	std::vector<Coordinate_double> ret_path = std::vector<Coordinate_double>();
+	ret_path.push_back(point0);
+	if (intersects.size() == 0) {
+		ret_path.push_back(point1);
+		return ret_path;
+	}
+	Coordinate_double moved_away_init = move_from_circle_xy(circle0, (Coordinate_double) point0, (Coordinate_double) point1, intersects[0], ceil(circle0.get_radius() / 10.0));
+	std::vector<Coordinate_double> intersect_tmp = find_intersect_cylinder(moved_away_init, point1, circle0);
+
+	// Check if we still have intersect
+	if (intersect_tmp.size() == 0) {
+		ret_path.push_back(moved_away_init);
+		ret_path.push_back(point1);
+		return ret_path;
+	}
+	
+	// Check if same as given intersects
+	if (intersect_tmp[0] == intersects[0]) {
+		moved_away_init = traverse_orthog_xy_line(point0, point1, moved_away_init, ceil(circle0.get_radius() / 10.0));
+		intersect_tmp = find_intersect_cylinder(moved_away_init, point1, circle0);
+	}
+	ret_path.push_back(moved_away_init);
+
+	do {
+		intersect_tmp[0] = move_from_circle_xy(circle0, (Coordinate_double) point0, (Coordinate_double) point1, intersect_tmp[0], ceil(circle0.get_radius() / 10.0));
+		ret_path.push_back(intersect_tmp[0]);
+		intersect_tmp = find_intersect_cylinder(intersect_tmp[0], point1, circle0);
+	} while (intersect_tmp.size() != 0);
+
+	ret_path.push_back(point1);
+	return ret_path;
+}
+
+/*
 * find_intersect_sphere()
 * Requires:
-* - coordinate: point0, coordinate of the starting point of the line
-* - coordinate: point1, coordinate of the ending point of the line
-* - circle: circle0, the circle to check for intersects
+* - Coordinate: point0, coordinate of the starting point of the line
+* - Coordinate: point1, coordinate of the ending point of the line
+* - Circle: circle0, the circle to check for intersects
 * Returns:
 * - int: number of intersects
 */
 int find_intersect_sphere(Coordinate point0, Coordinate point1, Circle circle0) {
-	/**
+	/*
 	* Algorithm
 	* 1. Find equation of plane perpendicular to line
 	* 
@@ -162,13 +235,46 @@ int find_intersect_sphere(Coordinate point0, Coordinate point1, Circle circle0) 
 /*
 * find_dist_squared()
 * Requires:
-* - coordinate: point0, marks starting point
-* - coordinate: point1, marks end point
+* - Coordinate_double: point0, marks starting point
+* - Coordinate_double: point1, marks end point
 * Returns:
 * - double: distance squared
 */
-double find_dist_squared(Coordinate point0, Coordinate point1) {
+double find_dist_squared(Coordinate_double point0, Coordinate_double point1) {
 	return pow((point0.x_coor - point1.x_coor), 2) +
 		pow((point0.y_coor - point1.y_coor), 2) +
 		pow((point0.z_coor - point1.z_coor), 2);
+}
+
+/*
+ * move_from_circle_xy()
+ */
+Coordinate_double move_from_circle_xy(Circle circle, Coordinate_double point0, Coordinate_double point1, Coordinate_double coor, int move_by) {
+	double diff_coor_x = coor.x_coor - circle.get_coordinate().x_coor;
+	double diff_coor_y = coor.y_coor - circle.get_coordinate().y_coor;
+	Coordinate_double pre_z_adjust = traverse_on_line(Coordinate_double(circle.get_coordinate().x_coor, circle.get_coordinate().y_coor, 0), Coordinate_double(coor.x_coor, coor.y_coor, 0), coor, move_by);
+	return Coordinate_double(pre_z_adjust.x_coor, pre_z_adjust.y_coor, traverse_on_line(point0, point1, pre_z_adjust, move_by * -1).z_coor);
+}
+
+/*
+ * traverse_on_line()
+ */
+Coordinate_double traverse_on_line(Coordinate_double point0, Coordinate_double point1, Coordinate_double curr, int move_by) {
+	double diff_coor_x = point1.x_coor - point0.x_coor;
+	double diff_coor_y = point1.y_coor - point0.y_coor;
+	double diff_coor_z = point1.z_coor - point0.z_coor;
+	double magnitude = sqrt(find_dist_squared(Coordinate_double(diff_coor_x, diff_coor_y, diff_coor_z), Coordinate(0, 0, 0)));
+
+	return Coordinate_double(curr.x_coor + diff_coor_x * move_by / magnitude, curr.y_coor + diff_coor_y * move_by / magnitude, curr.z_coor + diff_coor_z * move_by / magnitude);
+}
+
+/*
+ * traverse_orthog_line()
+ */
+Coordinate_double traverse_orthog_xy_line(Coordinate_double point0, Coordinate_double point1, Coordinate_double curr, int move_by) {
+	double diff_coor_x = point1.x_coor - point0.x_coor;
+	double diff_coor_y = point1.y_coor - point0.y_coor;
+	double magnitude = sqrt(find_dist_squared(Coordinate_double(diff_coor_x, diff_coor_y, 0), Coordinate(0, 0, 0)));
+
+	return Coordinate_double(curr.y_coor + diff_coor_y * move_by / magnitude, 0 - (curr.x_coor + diff_coor_x * move_by / magnitude), curr.z_coor);
 }
